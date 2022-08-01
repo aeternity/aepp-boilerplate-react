@@ -19,7 +19,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+		"start:testnet": "REACT_APP_NODE_ENV=development react-scripts start",
+    "start:mainnet": "REACT_APP_NODE_ENV=production react-scripts start",
+		"build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

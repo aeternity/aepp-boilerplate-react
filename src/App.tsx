@@ -1,7 +1,8 @@
 import { AeSdkAepp, AE_AMOUNT_FORMATS } from '@aeternity/aepp-sdk';
 
 import './App.css';
-import logo from './logo.svg';
+import logo from './assets/logo.svg';
+import loadingLogo from './assets/loading-logo.svg';
 import useAeternitySDK from './hooks/useAeternitySDK';
 import network from "./configs/network";
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
@@ -17,8 +18,8 @@ const WalletConnectionStatus = Object.freeze({
 const App = () => {
 	const [client, clientReady] = useAeternitySDK();
 	const [address, setAddress] = useState(null);
-	const [balance, setBalance] = useState(null);
-	const [errorMsg, setErrorMsg] = useState<any>(null);
+	const [balance, setBalance] = useState('loading...');
+	const [errorMsg, setErrorMsg] = useState<string>("");
 	const [status, setStatus] = useState(WalletConnectionStatus.Connecting)
 	
 	const aeSdk: MutableRefObject<AeSdkAepp | null> = useRef(null);
@@ -56,33 +57,31 @@ const App = () => {
 	return (
 		<div className="App">
 			<header className="App-header">
-				<img src={logo} className="App-logo" alt="logo" />
 				<div>
 					{status === WalletConnectionStatus.Connecting &&
-						<span>Searching for Wallet ...</span>
+						<div>
+							<img src={loadingLogo} alt="logo" />
+							<h6>Searching for Wallet ...</h6>
+						</div>
 					}
 				</div>
 				<div>
 					{status === WalletConnectionStatus.Error &&
-						<span>{errorMsg}</span>
+						<div>
+							<img src={logo} alt="logo" />
+							<h6>{errorMsg}</h6>
+						</div>
 					}
 				</div>
 				<div>
 					{status === WalletConnectionStatus.Connected &&
 						<div>
+							<img src={logo} alt="logo" />
 							<h6>Account address: {address}</h6>
 							<h6>Balance: {JSON.stringify(balance)}</h6>
 						</div>
 					}
 				</div>
-				<a
-					className="App-link"
-					href="https://aeternity.com/awesome-aeternity"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					awesome æternity
-				</a>
 			</header>
 		</div>
 	);

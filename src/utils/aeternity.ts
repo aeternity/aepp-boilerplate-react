@@ -53,7 +53,12 @@ export const initSDK= async () : Promise<{
     aeSdk = new AeSdkAepp({
       name: "aepp-boilerplate",
 		...node,
-    } as any);
+		onAddressChange: ({ current }) => console.log('new address'),
+		onNetworkChange: (params) => console.log('network changed'),
+		onDisconnect: () => {
+			return new Error('Disconnected');
+		},
+    });
     
 	const walletNetworkId: string = await scanForWallets();
 
