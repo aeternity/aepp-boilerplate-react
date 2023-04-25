@@ -1,44 +1,69 @@
-import { AeSdkAepp } from '@aeternity/aepp-sdk';
 import {
-	useRef,
-	useState,
-	useEffect,
-	MutableRefObject
-} from 'react';
+	AeSdkAepp,
+	BrowserWindowMessageConnection,
+	Node,
+	SUBSCRIPTION_TYPES,
+	walletDetector,
+ } from '@aeternity/aepp-sdk';
+import { useState } from 'react';
 
-import { initSDK } from "../utils/aeternity";
+import network from '../configs/network';
+
+let aeSdk: AeSdkAepp;
+let wallet: Record<string, any>;
 
 /**
- * æternitySDK Hook 
- * 
- * @returns {Object} æpp client
+ * æternitySDK Hook
+ *
  */
 const useAeternitySDK = () => {
-	const client: MutableRefObject<{
-		walletNetworkId: string, 
-		aeSdk: AeSdkAepp
-	}> | MutableRefObject<null> = useRef(null);
+const [isSdkReady, setSdkReady] = useState<Boolean>(false);
 
-	const [connecting, setConnecting] = useState(false);
-	const [clientReady, setClientReady] = useState(false);
-	const [clientError, setClientError] = useState<any>(null);
+	const initSdk = async () => {
+			const node = {
+				nodes: [
+					{
+						name: network.id,
+						instance: new Node(network.url),
+					},
+				],
+				compilerUrl: network.compilerUrl,
+			};
 
-	useEffect(() => {
-		(async () => {
-				setClientError(null);
-				setConnecting(true);
-				try {
-					client.current = await initSDK() as any;
-					setClientReady(true);
-				} catch (err) {
-					setClientError(err);
-					setClientReady(false);
-				} finally {
-					setConnecting(false);
-				}
-		})();
-  }, []);
-	return [client, clientReady, connecting, clientError];
+			aeSdk = new AeSdkAepp({
+					name: "aepp-boilerplate",
+				...node,
+				onAddressChange: ({ current }) => console.log('new address'),
+				onNetworkChange: (params) => console.log('network changed'),
+				onDisconnect: () => {
+					return new Error('Disconnected');
+				},
+			});
+
+		// Create connection bridge
+		const scannerConnection = new BrowserWindowMessageConnection();
+		// Callback to handle wallet information
+		const handleNewWallet = async ({ wallets, newWallet }: any) => {
+			newWallet = newWallet || Object.values(wallets)[0]
+			if(aeSdk) {
+				await aeSdk.connectToWallet(await newWallet.getConnection())
+				await aeSdk.subscribeAddress(SUBSCRIPTION_TYPES.subscribe, "current")
+				stopScan();
+				wallet = newWallet.info;
+				setSdkReady(true);
+			}
+		};
+		// Use wallet detector method from SDK to start scanning for wallets
+		const stopScan = walletDetector(scannerConnection, handleNewWallet.bind(this));
+	}
+
+	const getSdk = async () => {
+		if(aeSdk) return aeSdk;
+		await initSdk();
+		return aeSdk;
+	}
+
+	return { isSdkReady, aeSdk, wallet, getSdk};
 }
 
 export default useAeternitySDK;
