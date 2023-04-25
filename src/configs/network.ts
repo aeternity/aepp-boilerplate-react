@@ -1,6 +1,6 @@
 /**
  * Testnet & Mainnet nodeConfig
- * 
+ *
  * @returns {Object} æ node config
  */
 const networks: any = {

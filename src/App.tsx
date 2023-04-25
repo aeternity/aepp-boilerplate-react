@@ -1,57 +1,63 @@
-import { AeSdkAepp, AE_AMOUNT_FORMATS } from '@aeternity/aepp-sdk';
+import { AE_AMOUNT_FORMATS } from '@aeternity/aepp-sdk';
+import { useEffect, useState } from 'react';
 
 import './App.css';
 import logo from './assets/logo.svg';
 import loadingLogo from './assets/loading-logo.svg';
 import useAeternitySDK from './hooks/useAeternitySDK';
 import network from "./configs/network";
-import { MutableRefObject, useEffect, useRef, useState } from 'react';
 
-// 
-const WalletConnectionStatus = Object.freeze({
-	Error: 0,
-	Connecting: 1,
-	Connected: 2,
-});
-
+enum WalletConnectionStatus {
+	Connecting,
+	Connected,
+	Error
+}
 
 const App = () => {
-	const [client, clientReady] = useAeternitySDK();
+	const { isSdkReady, aeSdk, wallet, getSdk } = useAeternitySDK();
 	const [address, setAddress] = useState(null);
 	const [balance, setBalance] = useState('loading...');
-	const [errorMsg, setErrorMsg] = useState<string>("");
-	const [status, setStatus] = useState(WalletConnectionStatus.Connecting)
-	
-	const aeSdk: MutableRefObject<AeSdkAepp | null> = useRef(null);
-	
+	const [status, setStatus] = useState<WalletConnectionStatus>(WalletConnectionStatus.Connecting)
+	const [walletNetworkId, setWalletNetworkId] = useState<string>("")
 
-	const fetchAccountDetails = async function (walletNetworkId: string) {
-    if (!aeSdk.current) return;
-		if (status !== WalletConnectionStatus.Error && walletNetworkId !== network.id) {
-			setErrorMsg(`Connected to the wrong network "${walletNetworkId}". please switch to "${network.id}" in your wallet.`)
-			setStatus(WalletConnectionStatus.Error);
-		} else if(status !== WalletConnectionStatus.Connected){
-			setStatus(WalletConnectionStatus.Connected);
+	useEffect(() => {
+		(async () => {
+			await getSdk();
+		})();
+	}, [])
 
-			const _address: any = await aeSdk.current.address()
+	useEffect(() => {
+		// Callback if wallet switches active account
+		const handleAddressChange = async function() {
+			const _address: any = await aeSdk.address
 			setAddress(_address);
-
-			const _balance: any = await aeSdk.current.getBalance(_address, {
+			const _balance: any = await aeSdk.getBalance(_address, {
 				format: AE_AMOUNT_FORMATS.AE
 			});
 			setBalance(_balance);
 		}
-	}
 
-	useEffect(() => {
-		if (clientReady && client) {
-			aeSdk.current = client.current.aeSdk;
-
-      if (!aeSdk.current) return;
-			aeSdk.current.onNetworkChange = (params) => fetchAccountDetails(params.networkId);
-			fetchAccountDetails(client.current.walletNetworkId);
+		// Callback if wallet switches network
+		const handleNetworkChange = async function (walletNetworkId: string) {
+			setWalletNetworkId(walletNetworkId);
+			// In this example, we support only testnet hence set error if wallet is connected to the mainnet
+			if (walletNetworkId !== network.id) {
+				setStatus(WalletConnectionStatus.Error);
+				return;
+			}
+			setStatus(WalletConnectionStatus.Connected);
 		}
-	}, [clientReady, client]);
+
+		if (isSdkReady) {
+			aeSdk.onNetworkChange = ({ networkId }: { networkId: string }) => handleNetworkChange(networkId);
+			aeSdk.onAddressChange = ({ current, connected }: any) => handleAddressChange();
+
+			// Check network
+			handleNetworkChange(wallet.networkId);
+			// Use the call back to update account details
+			handleAddressChange();
+		}
+	}, [isSdkReady]);
 
 
 	return (
@@ -69,7 +75,7 @@ const App = () => {
 					{status === WalletConnectionStatus.Error &&
 						<div>
 							<img src={logo} alt="logo" />
-							<h6>{errorMsg}</h6>
+							<h6>Current network "{walletNetworkId}" is not supported. Please switch network in the wallet.</h6>
 						</div>
 					}
 				</div>
@@ -77,8 +83,9 @@ const App = () => {
 					{status === WalletConnectionStatus.Connected &&
 						<div>
 							<img src={logo} alt="logo" />
-							<h6>Account address: {address}</h6>
-							<h6>Balance: {JSON.stringify(balance)}</h6>
+							<h6>Account: {address}</h6>
+							<h6>Balance: {balance}</h6>
+							<h6> Connected to wallet "{wallet.name}" on network "{ walletNetworkId }"</h6>
 						</div>
 					}
 				</div>
