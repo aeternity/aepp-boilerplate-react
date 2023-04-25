@@ -24,12 +24,12 @@ const App = () => {
 		(async () => {
 			await getSdk();
 		})();
-	}, [])
+	}, []);
 
 	useEffect(() => {
 		// Callback if wallet switches active account
 		const handleAddressChange = async function() {
-			const _address: any = await aeSdk.address
+			const _address: any = aeSdk.address;
 			setAddress(_address);
 			const _balance: any = await aeSdk.getBalance(_address, {
 				format: AE_AMOUNT_FORMATS.AE
