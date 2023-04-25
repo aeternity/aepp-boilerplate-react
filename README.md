@@ -1,10 +1,8 @@
 # æpp boilerplate ReactJS frontend
 
-This boilerplate allows everyone to easy start when building an æpp with ReactJS on top of the æternity ecosystem. It contains three critical parts:
-
-- A custom GitHub Action
-- The aepp-sdk-js
-- Easy wallet discovery
+This boilerplate allows everyone to easy start when building an æpp with ReactJS on top of the æternity ecosystem.
+This boilerplate detects any Aeternity compatible wallets installed, if yes then connects to it.
+Provides a variable `aeSdk` which could be used to interact with the Wallet and the Aeternity Blockchain.
 
 ## Get started
 
@@ -20,6 +18,8 @@ For development purposes (hot-reloading)
 
 ```bash
 npm start
+# npm run start:testnet
+# npm run start:mainnet
 ```
 
 To build the bundle for production
@@ -33,6 +33,11 @@ For running the integration tests
 ```bash
 npm test
 ```
+
+## Links
+
+1. [Working with Contracts guide](https://docs.aeternity.com/aepp-sdk-js/v13.0.1/guides/contracts/)
+2. [Vue AEPP example](https://github.com/aeternity/aepp-sdk-js/tree/develop/examples/browser)
 
 ## Main Features
 

@@ -1,6 +1,7 @@
 import {
 	AeSdkAepp,
 	BrowserWindowMessageConnection,
+	CompilerHttp,
 	Node,
 	SUBSCRIPTION_TYPES,
 	walletDetector,
@@ -20,24 +21,13 @@ const useAeternitySDK = () => {
 const [isSdkReady, setSdkReady] = useState<Boolean>(false);
 
 	const initSdk = async () => {
-			const node = {
-				nodes: [
-					{
-						name: network.id,
-						instance: new Node(network.url),
-					},
-				],
-				compilerUrl: network.compilerUrl,
-			};
-
 			aeSdk = new AeSdkAepp({
-					name: "aepp-boilerplate",
-				...node,
+				name: "aepp-boilerplate",
+				nodes: [{ name: network.id, instance: new Node(network.url) }],
+				onCompiler: new CompilerHttp(network.compilerUrl),
 				onAddressChange: ({ current }) => console.log('new address'),
 				onNetworkChange: (params) => console.log('network changed'),
-				onDisconnect: () => {
-					return new Error('Disconnected');
-				},
+				onDisconnect: () => new Error('Disconnected'),
 			});
 
 		// Create connection bridge
