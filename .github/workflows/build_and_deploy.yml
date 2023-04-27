@@ -1,9 +1,6 @@
 name: æpp CI/CD
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
   build:
@@ -12,25 +9,30 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [16.x, 18.x, 20.x]
     
     steps:
     - name: Checkout æpp code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     
     - name: Install Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
     
     - name: Install NPM dependencies
-      run: npm install
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test
     
     - name: Build production-ready files
+      env:
+        PUBLIC_URL: /aepp-boilerplate-react/
       run: npm run build
 
     - name: Upload production-ready build files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: production-files
         path: ./build
@@ -43,7 +45,7 @@ jobs:
     
     steps:
     - name: Download production-ready build files
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: production-files
         path: ./build
