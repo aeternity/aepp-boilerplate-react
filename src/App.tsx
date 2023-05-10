@@ -1,5 +1,5 @@
 import { AE_AMOUNT_FORMATS } from '@aeternity/aepp-sdk';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './App.css';
 import logo from './assets/logo.svg';
@@ -7,86 +7,55 @@ import loadingLogo from './assets/loading-logo.svg';
 import useAeternitySDK from './hooks/useAeternitySDK';
 import network from "./configs/network";
 
-enum WalletConnectionStatus {
-	Connecting,
-	Connected,
-	Error
-}
-
 const App = () => {
-	const { isSdkReady, aeSdk, wallet, getSdk } = useAeternitySDK();
-	const [address, setAddress] = useState(null);
+	const { aeSdk, address, networkId, connectToWallet } = useAeternitySDK();
 	const [balance, setBalance] = useState('loading...');
-	const [status, setStatus] = useState<WalletConnectionStatus>(WalletConnectionStatus.Connecting)
-	const [walletNetworkId, setWalletNetworkId] = useState<string>("")
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [message, setMessage] = useState<string | undefined>();
 
 	useEffect(() => {
 		(async () => {
-			await getSdk();
+			setIsLoading(true);
+			setMessage('Searching for Wallet ...');
+			try {
+				await connectToWallet();
+				setMessage(undefined);
+			} catch (error) {
+				if (!(error instanceof Error)) throw error;
+				setMessage(error.message);
+			} finally {
+				setIsLoading(false);
+			}
 		})();
-	}, []);
+	}, [connectToWallet]);
 
 	useEffect(() => {
-		// Callback if wallet switches active account
-		const handleAddressChange = async function() {
-			const _address: any = aeSdk.address;
-			setAddress(_address);
-			const _balance: any = await aeSdk.getBalance(_address, {
-				format: AE_AMOUNT_FORMATS.AE
-			});
-			setBalance(_balance);
-		}
+		(async () => {
+			if (networkId == null || address == null) return;
 
-		// Callback if wallet switches network
-		const handleNetworkChange = async function (walletNetworkId: string) {
-			setWalletNetworkId(walletNetworkId);
-			// In this example, we support only testnet hence set error if wallet is connected to the mainnet
-			if (walletNetworkId !== network.id) {
-				setStatus(WalletConnectionStatus.Error);
+			if (networkId !== network.id) {
+				setMessage(`Current network "${networkId}" is not supported. Please switch network in the wallet.`);
 				return;
 			}
-			setStatus(WalletConnectionStatus.Connected);
-		}
-
-		if (isSdkReady) {
-			aeSdk.onNetworkChange = ({ networkId }: { networkId: string }) => handleNetworkChange(networkId);
-			aeSdk.onAddressChange = ({ current, connected }: any) => handleAddressChange();
-
-			// Check network
-			handleNetworkChange(wallet.networkId);
-			// Use the call back to update account details
-			handleAddressChange();
-		}
-	}, [isSdkReady]);
-
+			setMessage(undefined);
+			
+			const _balance = await aeSdk.getBalance(address, { format: AE_AMOUNT_FORMATS.AE });
+			setBalance(_balance);
+		})();
+	}, [aeSdk, networkId, address]);
 
 	return (
 		<div className="App">
 			<header className="App-header">
 				<div>
-					{status === WalletConnectionStatus.Connecting &&
-						<div>
-							<img src={loadingLogo} alt="logo" />
-							<h6>Searching for Wallet ...</h6>
-						</div>
-					}
-				</div>
-				<div>
-					{status === WalletConnectionStatus.Error &&
-						<div>
-							<img src={logo} alt="logo" />
-							<h6>Current network "{walletNetworkId}" is not supported. Please switch network in the wallet.</h6>
-						</div>
-					}
-				</div>
-				<div>
-					{status === WalletConnectionStatus.Connected &&
-						<div>
-							<img src={logo} alt="logo" />
+					<img src={isLoading ? loadingLogo : logo} alt="logo" />
+					{message
+						? <h6>{message}</h6>
+						: <React.Fragment>
 							<h6>Account: {address}</h6>
 							<h6>Balance: {balance}</h6>
-							<h6> Connected to wallet "{wallet.name}" on network "{ walletNetworkId }"</h6>
-						</div>
+							<h6>Connected to wallet on network "{networkId}"</h6>
+						</React.Fragment>
 					}
 				</div>
 			</header>
