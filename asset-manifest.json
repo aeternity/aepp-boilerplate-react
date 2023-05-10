@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/aepp-boilerplate-react/static/css/main.073c9b0a.css",
-    "main.js": "/aepp-boilerplate-react/static/js/main.6a8b7e06.js",
-    "static/js/787.e359ad4f.chunk.js": "/aepp-boilerplate-react/static/js/787.e359ad4f.chunk.js",
+    "main.js": "/aepp-boilerplate-react/static/js/main.6072435b.js",
+    "static/js/496.734e6a09.chunk.js": "/aepp-boilerplate-react/static/js/496.734e6a09.chunk.js",
     "index.html": "/aepp-boilerplate-react/index.html",
     "static/media/logo.svg": "/aepp-boilerplate-react/static/media/logo.34afe2ab62e9a2d7a493c7035338079d.svg",
     "static/media/loading-logo.svg": "/aepp-boilerplate-react/static/media/loading-logo.6e53da5472b4685a51d08a26ff859710.svg",
     "main.073c9b0a.css.map": "/aepp-boilerplate-react/static/css/main.073c9b0a.css.map",
-    "main.6a8b7e06.js.map": "/aepp-boilerplate-react/static/js/main.6a8b7e06.js.map",
-    "787.e359ad4f.chunk.js.map": "/aepp-boilerplate-react/static/js/787.e359ad4f.chunk.js.map"
+    "main.6072435b.js.map": "/aepp-boilerplate-react/static/js/main.6072435b.js.map",
+    "496.734e6a09.chunk.js.map": "/aepp-boilerplate-react/static/js/496.734e6a09.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.6a8b7e06.js"
+    "static/js/main.6072435b.js"
   ]
 }
